@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Japan IPTV M3U</title>
+  <style>
+    :root { color-scheme: light dark; font-family: system-ui, sans-serif; }
+    body { max-width: 760px; margin: 64px auto; padding: 0 20px; line-height: 1.7; }
+    code { overflow-wrap: anywhere; }
+    a { color: #1677c8; }
+  </style>
+</head>
+<body>
+  <h1>Japan IPTV M3U</h1>
+  <p>最新JSONから、現在応答する配信URLだけを確認してM3Uを生成します。</p>
+  <p><a href="/api/playlist.m3u">M3Uプレイリストを開く</a></p>
+  <p>IPTVnatorには次のURLを登録してください。</p>
+  <p><code id="url"></code></p>
+  <script>
+    document.getElementById("url").textContent =
+      location.origin + "/api/playlist.m3u";
+  </script>
+</body>
+</html>
