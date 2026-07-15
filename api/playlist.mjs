@@ -1,0 +1,181 @@
+const SOURCE_URL =
+  "https://raw.githubusercontent.com/tareq236/JapanIPTV/main/jp_tv_channels.json";
+
+const CHECK_TIMEOUT_MS = 4500;
+const CONCURRENCY = 20;
+
+export const config = {
+  maxDuration: 60,
+};
+
+function clean(value) {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function validHttpUrl(value) {
+  try {
+    const url = new URL(value);
+    return url.protocol === "http:" || url.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+function escapeAttribute(value) {
+  return clean(value)
+    .replaceAll("\\", "\\\\")
+    .replaceAll('"', "\\\"")
+    .replace(/[\r\n]+/g, " ");
+}
+
+function escapeName(value) {
+  return clean(value).replace(/[\r\n]+/g, " ");
+}
+
+async function isReachable(url) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), CHECK_TIMEOUT_MS);
+
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+      redirect: "follow",
+      signal: controller.signal,
+      headers: {
+        Accept: "application/vnd.apple.mpegurl, application/x-mpegURL, */*",
+        Range: "bytes=0-2047",
+        "User-Agent": "Mozilla/5.0 (compatible; JapanIPTVChecker/1.0)",
+      },
+    });
+
+    if (response.body) {
+      await response.body.cancel().catch(() => {});
+    }
+
+    return response.status >= 200 && response.status < 400;
+  } catch {
+    return false;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function mapLimit(items, limit, mapper) {
+  const results = new Array(items.length);
+  let nextIndex = 0;
+
+  async function worker() {
+    while (true) {
+      const index = nextIndex++;
+      if (index >= items.length) return;
+      results[index] = await mapper(items[index], index);
+    }
+  }
+
+  await Promise.all(
+    Array.from({ length: Math.min(limit, items.length) }, () => worker()),
+  );
+  return results;
+}
+
+function collectCandidates(channels) {
+  const seen = new Set();
+  const candidates = [];
+
+  for (const channel of channels) {
+    for (const field of ["url", "url_free_tv"]) {
+      const url = clean(channel?.[field]);
+      if (!validHttpUrl(url) || seen.has(url)) continue;
+      seen.add(url);
+
+      candidates.push({
+        name: clean(channel?.name) || "名称不明",
+        category: clean(channel?.category) || "その他",
+        logo: validHttpUrl(clean(channel?.channel_logo))
+          ? clean(channel?.channel_logo)
+          : "",
+        url,
+      });
+    }
+  }
+
+  return candidates;
+}
+
+function toM3u(channels) {
+  const lines = ["#EXTM3U"];
+
+  for (const channel of channels) {
+    const attributes = [
+      `tvg-name="${escapeAttribute(channel.name)}"`,
+      `group-title="${escapeAttribute(channel.category)}"`,
+    ];
+
+    if (channel.logo) {
+      attributes.push(`tvg-logo="${escapeAttribute(channel.logo)}"`);
+    }
+
+    lines.push(
+      `#EXTINF:-1 ${attributes.join(" ")},${escapeName(channel.name)}`,
+      channel.url,
+    );
+  }
+
+  return `${lines.join("\n")}\n`;
+}
+
+export default async function handler(request, response) {
+  if (request.method !== "GET") {
+    response.setHeader("Allow", "GET");
+    return response.status(405).send("Method Not Allowed");
+  }
+
+  try {
+    const sourceResponse = await fetch(SOURCE_URL, {
+      headers: {
+        Accept: "application/json",
+        "User-Agent": "JapanIPTV-Vercel/1.0",
+      },
+      cache: "no-store",
+    });
+
+    if (!sourceResponse.ok) {
+      throw new Error(`Source returned HTTP ${sourceResponse.status}`);
+    }
+
+    const source = await sourceResponse.json();
+    if (!Array.isArray(source)) {
+      throw new Error("Source JSON is not an array");
+    }
+
+    const candidates = collectCandidates(source);
+    const checks = await mapLimit(candidates, CONCURRENCY, async (channel) => ({
+      channel,
+      reachable: await isReachable(channel.url),
+    }));
+    const active = checks
+      .filter((result) => result.reachable)
+      .map((result) => result.channel);
+
+    response.setHeader(
+      "Cache-Control",
+      "public, s-maxage=900, stale-while-revalidate=86400",
+    );
+    response.setHeader("Content-Type", "audio/x-mpegurl; charset=utf-8");
+    response.setHeader(
+      "Content-Disposition",
+      'inline; filename="japan-active.m3u"',
+    );
+    response.setHeader("X-Source-Channels", String(source.length));
+    response.setHeader("X-Candidate-Streams", String(candidates.length));
+    response.setHeader("X-Active-Streams", String(active.length));
+
+    return response.status(200).send(toM3u(active));
+  } catch (error) {
+    console.error(error);
+    response.setHeader("Cache-Control", "no-store");
+    return response
+      .status(502)
+      .send(`#EXTM3U\n# Playlist generation failed: ${error.message}\n`);
+  }
+}
