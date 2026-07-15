@@ -1,0 +1,25 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "functions": {
+    "api/playlist.mjs": {
+      "maxDuration": 60
+    }
+  },
+  "headers": [
+    {
+      "source": "/api/playlist.m3u",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        }
+      ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/api/playlist.m3u",
+      "destination": "/api/playlist"
+    }
+  ]
+}
