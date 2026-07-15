@@ -4,6 +4,33 @@ const SOURCE_URL =
 const CHECK_TIMEOUT_MS = 4500;
 const CONCURRENCY = 20;
 
+const ALLOWED_CATEGORIES = new Set(["terrestrial", "bs", "cs"]);
+const EXCLUDED_NAME_PATTERNS = [
+  /アダルト/i,
+  /成人/i,
+  /年齢制限/i,
+  /セクシー/i,
+  /グラビア/i,
+  /歓楽街/i,
+  /pigoo/i,
+  /v[ _-]?paradise/i,
+  /刺激ストロング/i,
+  /パチンコ/i,
+  /パチスロ/i,
+  /スロット/i,
+  /競輪/i,
+  /オートレース/i,
+  /競艇/i,
+  /ボートレース/i,
+  /ショップ/i,
+  /ショッピング/i,
+  /通販/i,
+  /shop channel/i,
+  /shopch/i,
+  /qvc/i,
+  /ジャパネット/i,
+];
+
 export const config = {
   maxDuration: 60,
 };
@@ -78,11 +105,22 @@ async function mapLimit(items, limit, mapper) {
   return results;
 }
 
+function isGeneralBroadcastChannel(channel) {
+  const name = clean(channel?.name);
+  const category = clean(channel?.category).toLowerCase();
+
+  if (!ALLOWED_CATEGORIES.has(category)) return false;
+  if (name.length < 2) return false;
+  return !EXCLUDED_NAME_PATTERNS.some((pattern) => pattern.test(name));
+}
+
 function collectCandidates(channels) {
   const seen = new Set();
   const candidates = [];
 
   for (const channel of channels) {
+    if (!isGeneralBroadcastChannel(channel)) continue;
+
     for (const field of ["url", "url_free_tv"]) {
       const url = clean(channel?.[field]);
       if (!validHttpUrl(url) || seen.has(url)) continue;
