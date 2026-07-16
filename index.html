@@ -7,19 +7,34 @@
   <style>
     :root { color-scheme: light dark; font-family: system-ui, sans-serif; }
     body { max-width: 760px; margin: 64px auto; padding: 0 20px; line-height: 1.7; }
-    code { overflow-wrap: anywhere; }
+    section { margin: 28px 0; padding: 20px; border: 1px solid #aaa; border-radius: 10px; }
+    code { display: block; margin-top: 8px; overflow-wrap: anywhere; }
     a { color: #1677c8; }
   </style>
 </head>
 <body>
   <h1>Japan IPTV M3U</h1>
-  <p>最新JSONから、現在応答する配信URLだけを確認してM3Uを生成します。</p>
-  <p><a href="/api/playlist.m3u">M3Uプレイリストを開く</a></p>
-  <p>IPTVnatorには次のURLを登録してください。</p>
-  <p><code id="url"></code></p>
+  <p>用途に応じて2種類のプレイリストを利用できます。</p>
+
+  <section>
+    <h2>Full版</h2>
+    <p>地上波代替を含む幅広いチャンネル。成人向け、ギャンブル、通販は除外しています。</p>
+    <p><a href="/api/full.m3u">Full版を開く</a></p>
+    <code id="full"></code>
+  </section>
+
+  <section>
+    <h2>Stable版</h2>
+    <p>信頼性の高い公開配信基盤に限定した安定重視版です。</p>
+    <p><a href="/api/stable.m3u">Stable版を開く</a></p>
+    <code id="stable"></code>
+  </section>
+
   <script>
-    document.getElementById("url").textContent =
-      location.origin + "/api/playlist.m3u";
+    document.getElementById("full").textContent =
+      location.origin + "/api/full.m3u";
+    document.getElementById("stable").textContent =
+      location.origin + "/api/stable.m3u";
   </script>
 </body>
 </html>
