@@ -6,6 +6,9 @@
     },
     "api/iptv-org.mjs": {
       "maxDuration": 30
+    },
+    "api/reaperc.mjs": {
+      "maxDuration": 30
     }
   },
   "headers": [
@@ -20,6 +23,10 @@
     }
   ],
   "rewrites": [
+    {
+      "source": "/api/reaperc-clean.m3u",
+      "destination": "/api/reaperc"
+    },
     {
       "source": "/api/iptv-org.m3u",
       "destination": "/api/iptv-org"
