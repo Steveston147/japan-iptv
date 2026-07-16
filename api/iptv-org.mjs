@@ -119,7 +119,7 @@ function toM3u(entries) {
 
   for (const entry of entries) {
     lines.push(
-      `#EXTINF:-1 tvg-name="${escapeAttribute(entry.name)}" group-title="${escapeAttribute(entry.group)}",${entry.name}`,
+      `#EXTINF:-1 tvg-id="${escapeAttribute(entry.tvgId)}" tvg-name="${escapeAttribute(entry.name)}" group-title="${escapeAttribute(entry.group)}",${entry.name}`,
       ...entry.options,
       entry.url,
     );
