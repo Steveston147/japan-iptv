@@ -17,6 +17,13 @@
   <p>用途に応じてプレイリストを選べます。</p>
 
   <section>
+    <h2>日本テレビ局・充実版（おすすめ）</h2>
+    <p>地上波、BS、CS、ニュース、スポーツなどを幅広く収録し、成人向け、パチンコ・公営競技、通販を除外します。</p>
+    <p><a href="/api/reaperc-clean.m3u">日本テレビ局・充実版を開く</a></p>
+    <code id="reaperc"></code>
+  </section>
+
+  <section>
     <h2>IPTV-org整理版</h2>
     <p>公式・公開系を中心に、日本向けチャンネルを整理した少数精鋭版です。</p>
     <p><a href="/api/iptv-org.m3u">IPTV-org整理版を開く</a></p>
@@ -38,6 +45,8 @@
   </section>
 
   <script>
+    document.getElementById("reaperc").textContent =
+      location.origin + "/api/reaperc-clean.m3u";
     document.getElementById("iptvorg").textContent =
       location.origin + "/api/iptv-org.m3u";
     document.getElementById("full").textContent =
