@@ -1,8 +1,23 @@
 # Japan IPTV M3U
 
-公開されている JapanIPTV の最新 JSON を取得し、HTTP/HTTPS の配信 URL を確認して、応答したストリームだけを M3U として返す Vercel 用プロジェクトです。
+公開されている日本向け IPTV リストを取得し、HTTP/HTTPS の配信 URL を確認して、応答したストリームだけを M3U として返す Vercel 用プロジェクトです。
 
 ## M3U URL
+
+### JP-IPTV 動作確認版
+
+`MrKagesan/JP-IPTV` の日本向けプレイリストを取得し、各配信 URL が実際に HLS または DASH のプレイリストを返すか確認します。リンク切れ、DNS エラー、HTML エラーページを除外して返します。
+
+```
+https://<your-vercel-domain>/api/jp-iptv.m3u
+```
+
+- 東京・関西の地上波、BS、CS、ニュースなどを対象
+- 重複 URL を除外
+- 最大5秒で応答しないリンクを除外
+- HLS（`#EXTM3U`）または DASH（`<MPD`）を確認
+- 取得不能だった元リストの EPG URL は引き継がない
+- Vercel CDNで15分キャッシュ
 
 ### IPTV-org整理版
 
@@ -30,7 +45,7 @@ https://<your-vercel-domain>/api/stable.m3u
 
 従来の `/api/playlist.m3u` はStable版として維持しています。
 
-## 仕様
+## 既存JSON版の仕様
 
 - 元データ: `tareq236/JapanIPTV/jp_tv_channels.json`
 - `url` と `url_free_tv` の両方を利用
