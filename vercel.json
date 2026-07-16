@@ -6,9 +6,6 @@
     },
     "api/iptv-org.mjs": {
       "maxDuration": 30
-    },
-    "api/jp-iptv.mjs": {
-      "maxDuration": 60
     }
   },
   "headers": [
@@ -23,10 +20,6 @@
     }
   ],
   "rewrites": [
-    {
-      "source": "/api/jp-iptv.m3u",
-      "destination": "/api/jp-iptv"
-    },
     {
       "source": "/api/iptv-org.m3u",
       "destination": "/api/iptv-org"
