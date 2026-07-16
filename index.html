@@ -17,6 +17,13 @@
   <p>用途に応じて2種類のプレイリストを利用できます。</p>
 
   <section>
+    <h2>IPTV-org整理版</h2>
+    <p>日本テレビ、フジテレビ、テレビ朝日、TBSなどを局名表示し、通販と重複NHKを除外した少数精鋭版です。</p>
+    <p><a href="/api/iptv-org.m3u">IPTV-org整理版を開く</a></p>
+    <code id="iptvorg"></code>
+  </section>
+
+  <section>
     <h2>Full版</h2>
     <p>地上波代替を含む幅広いチャンネル。成人向け、ギャンブル、通販は除外しています。</p>
     <p><a href="/api/full.m3u">Full版を開く</a></p>
@@ -31,6 +38,8 @@
   </section>
 
   <script>
+    document.getElementById("iptvorg").textContent =
+      location.origin + "/api/iptv-org.m3u";
     document.getElementById("full").textContent =
       location.origin + "/api/full.m3u";
     document.getElementById("stable").textContent =
