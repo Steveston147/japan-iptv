@@ -7,7 +7,7 @@
   },
   "headers": [
     {
-      "source": "/api/playlist.m3u",
+      "source": "/api/(.*).m3u",
       "headers": [
         {
           "key": "Access-Control-Allow-Origin",
@@ -18,8 +18,16 @@
   ],
   "rewrites": [
     {
+      "source": "/api/full.m3u",
+      "destination": "/api/playlist?mode=full"
+    },
+    {
+      "source": "/api/stable.m3u",
+      "destination": "/api/playlist?mode=stable"
+    },
+    {
       "source": "/api/playlist.m3u",
-      "destination": "/api/playlist"
+      "destination": "/api/playlist?mode=stable"
     }
   ]
 }
