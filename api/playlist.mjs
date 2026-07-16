@@ -5,7 +5,17 @@ const CHECK_TIMEOUT_MS = 4500;
 const CONCURRENCY = 20;
 
 const ALLOWED_CATEGORIES = new Set(["terrestrial", "bs", "cs"]);
+
+// 実際の視聴テストで比較的安定していた公開配信基盤だけを採用する。
+// 不安定な地上波中継、個人プロキシ、短時間の待機映像は対象外。
+const TRUSTED_STREAM_HOST_SUFFIXES = [
+  "tsv2.amagi.tv",
+  "livetv.fastv.jp",
+  "akamaized.net",
+];
+
 const EXCLUDED_NAME_PATTERNS = [
+  /代替/i,
   /アダルト/i,
   /成人/i,
   /年齢制限/i,
@@ -48,6 +58,17 @@ function validHttpUrl(value) {
   }
 }
 
+function isTrustedStreamUrl(value) {
+  try {
+    const hostname = new URL(value).hostname.toLowerCase();
+    return TRUSTED_STREAM_HOST_SUFFIXES.some(
+      (suffix) => hostname === suffix || hostname.endsWith(`.${suffix}`),
+    );
+  } catch {
+    return false;
+  }
+}
+
 function escapeAttribute(value) {
   return clean(value)
     .replaceAll("\\", "\\\\")
@@ -75,11 +96,12 @@ async function isReachable(url) {
       },
     });
 
-    if (response.body) {
-      await response.body.cancel().catch(() => {});
-    }
+    if (response.status < 200 || response.status >= 400) return false;
 
-    return response.status >= 200 && response.status < 400;
+    // HTTP 200のHTMLエラーや静的な案内ページを除き、
+    // 実際のHLSプレイリストが返ることを確認する。
+    const sample = (await response.text()).slice(0, 8192);
+    return sample.includes("#EXTM3U");
   } catch {
     return false;
   } finally {
@@ -123,7 +145,13 @@ function collectCandidates(channels) {
 
     for (const field of ["url", "url_free_tv"]) {
       const url = clean(channel?.[field]);
-      if (!validHttpUrl(url) || seen.has(url)) continue;
+      if (
+        !validHttpUrl(url) ||
+        !isTrustedStreamUrl(url) ||
+        seen.has(url)
+      ) {
+        continue;
+      }
       seen.add(url);
 
       candidates.push({
