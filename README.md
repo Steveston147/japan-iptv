@@ -4,11 +4,23 @@
 
 ## M3U URL
 
+### Full版
+
+地上波代替を含む幅広い版です。成人向け、ギャンブル、通販、URL形式不正の項目を除外します。
+
 ```
-https://<your-vercel-domain>/api/playlist.m3u
+https://<your-vercel-domain>/api/full.m3u
 ```
 
-IPTVnator では上記 URL を「URLからプレイリストを追加」に登録してください。
+### Stable版
+
+実績のある公開配信基盤と、有効なHLS応答に限定した安定重視版です。
+
+```
+https://<your-vercel-domain>/api/stable.m3u
+```
+
+従来の `/api/playlist.m3u` はStable版として維持しています。
 
 ## 仕様
 
