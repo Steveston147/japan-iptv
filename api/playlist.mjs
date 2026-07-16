@@ -136,7 +136,7 @@ function isGeneralBroadcastChannel(channel) {
   return !EXCLUDED_NAME_PATTERNS.some((pattern) => pattern.test(name));
 }
 
-function collectCandidates(channels) {
+function collectCandidates(channels, mode) {
   const seen = new Set();
   const candidates = [];
 
@@ -147,7 +147,7 @@ function collectCandidates(channels) {
       const url = clean(channel?.[field]);
       if (
         !validHttpUrl(url) ||
-        !isTrustedStreamUrl(url) ||
+        (mode === "stable" && !isTrustedStreamUrl(url)) ||
         seen.has(url)
       ) {
         continue;
@@ -214,14 +214,22 @@ export default async function handler(request, response) {
       throw new Error("Source JSON is not an array");
     }
 
-    const candidates = collectCandidates(source);
-    const checks = await mapLimit(candidates, CONCURRENCY, async (channel) => ({
-      channel,
-      reachable: await isReachable(channel.url),
-    }));
-    const active = checks
-      .filter((result) => result.reachable)
-      .map((result) => result.channel);
+    const mode = request.query?.mode === "full" ? "full" : "stable";
+    const candidates = collectCandidates(source, mode);
+
+    // Full版は昨日のテスト版に近づけるため、形式が正しいURLを広く収録する。
+    // Stable版だけは配信元とHLSの実応答を厳格に確認する。
+    const active =
+      mode === "full"
+        ? candidates
+        : (
+            await mapLimit(candidates, CONCURRENCY, async (channel) => ({
+              channel,
+              reachable: await isReachable(channel.url),
+            }))
+          )
+            .filter((result) => result.reachable)
+            .map((result) => result.channel);
 
     response.setHeader(
       "Cache-Control",
@@ -230,8 +238,9 @@ export default async function handler(request, response) {
     response.setHeader("Content-Type", "audio/x-mpegurl; charset=utf-8");
     response.setHeader(
       "Content-Disposition",
-      'inline; filename="japan-active.m3u"',
+      `inline; filename="japan-${mode}.m3u"`,
     );
+    response.setHeader("X-Playlist-Mode", mode);
     response.setHeader("X-Source-Channels", String(source.length));
     response.setHeader("X-Candidate-Streams", String(candidates.length));
     response.setHeader("X-Active-Streams", String(active.length));
