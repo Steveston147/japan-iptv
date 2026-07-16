@@ -17,15 +17,8 @@
   <p>用途に応じてプレイリストを選べます。</p>
 
   <section>
-    <h2>JP-IPTV 動作確認版</h2>
-    <p>東京・関西地上波、BS、CSなどを含むJP-IPTVを取得し、Vercelで実際に応答したリンクだけを返します。</p>
-    <p><a href="/api/jp-iptv.m3u">JP-IPTV 動作確認版を開く</a></p>
-    <code id="jpiptv"></code>
-  </section>
-
-  <section>
     <h2>IPTV-org整理版</h2>
-    <p>日本テレビ、フジテレビ、テレビ朝日、TBSなどを局名表示し、通販と重複NHKを除外した少数精鋭版です。</p>
+    <p>公式・公開系を中心に、日本向けチャンネルを整理した少数精鋭版です。</p>
     <p><a href="/api/iptv-org.m3u">IPTV-org整理版を開く</a></p>
     <code id="iptvorg"></code>
   </section>
@@ -45,8 +38,6 @@
   </section>
 
   <script>
-    document.getElementById("jpiptv").textContent =
-      location.origin + "/api/jp-iptv.m3u";
     document.getElementById("iptvorg").textContent =
       location.origin + "/api/iptv-org.m3u";
     document.getElementById("full").textContent =
