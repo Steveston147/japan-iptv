@@ -4,6 +4,14 @@
 
 ## M3U URL
 
+### IPTV-org整理版
+
+IPTV-orgの日本向けストリームを取得し、地上波のコールサインを分かりやすい局名へ変換します。通販3局を除外し、NHK WORLD-JAPANの重複を1局に整理します。
+
+```
+https://<your-vercel-domain>/api/iptv-org.m3u
+```
+
 ### Full版
 
 地上波代替を含む幅広い版です。成人向け、ギャンブル、通販、URL形式不正の項目を除外します。
