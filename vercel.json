@@ -3,6 +3,9 @@
   "functions": {
     "api/playlist.mjs": {
       "maxDuration": 60
+    },
+    "api/iptv-org.mjs": {
+      "maxDuration": 30
     }
   },
   "headers": [
@@ -17,6 +20,10 @@
     }
   ],
   "rewrites": [
+    {
+      "source": "/api/iptv-org.m3u",
+      "destination": "/api/iptv-org"
+    },
     {
       "source": "/api/full.m3u",
       "destination": "/api/playlist?mode=full"
